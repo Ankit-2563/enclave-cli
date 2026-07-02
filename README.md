@@ -7,3 +7,11 @@ Secure Secrets Management Platform for Teams.
 ```bash
 npm install -g @enclave/cli
 ```
+
+## Usage
+
+### Injecting Secrets
+To inject secrets into your application process in-memory:
+```bash
+enclave run -- npm run dev
+```
