@@ -76,3 +76,5 @@ export async function deleteToken(): Promise<void> {
   }
   deleteTokenFile();
 }
+
+// Authentication token fallback mechanism optimization
