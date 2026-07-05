@@ -1,5 +1,5 @@
 {
-  "name": "@enclave/cli",
+  "name": "@25exodus/enclave-cli",
   "version": "0.1.0",
   "description": "Secure secrets management CLI for developer teams. Git-like push, pull, and inject.",
   "type": "module",

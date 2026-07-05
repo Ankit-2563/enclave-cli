@@ -2,13 +2,13 @@
 
 **Secure secrets management for developer teams.** Push, pull, and inject environment variables with Git-like commands — no plaintext `.env` files.
 
-[![npm version](https://badge.fury.io/js/%40enclave%2Fcli.svg)](https://www.npmjs.com/package/@enclave/cli)
+[![npm version](https://badge.fury.io/js/%4025exodus%2Fenclave-cli.svg)](https://www.npmjs.com/package/@25exodus/enclave-cli)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
 ## Installation
 
 ```bash
-npm install -g @enclave/cli
+npm install -g @25exodus/enclave-cli
 ```
 
 Verify installation:
