@@ -1,10 +1,22 @@
 {
   "name": "@enclave/cli",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "description": "Secure secrets management CLI for developer teams. Git-like push, pull, and inject.",
   "type": "module",
   "bin": {
     "enclave": "./dist/index.js",
     "enc": "./dist/index.js"
+  },
+  "files": [
+    "dist/**",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc",
@@ -24,5 +36,25 @@
   "devDependencies": {
     "@types/node": "^20.11.24",
     "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "secrets",
+    "secrets-manager",
+    "dotenv",
+    "environment-variables",
+    "cli",
+    "encryption",
+    "developer-tools"
+  ],
+  "author": "Ankit Bhavarthe <ankit@ankitbhavarthe.xyz> (https://ankitbhavarthe.xyz)",
+  "license": "MIT",
+  "homepage": "https://enclave.ankitbhavarthe.xyz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ankit-2563/enclave-cli"
+  },
+  "bugs": {
+    "url": "https://github.com/Ankit-2563/enclave-cli/issues"
   }
 }
+
