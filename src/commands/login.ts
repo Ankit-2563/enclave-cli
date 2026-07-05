@@ -5,6 +5,9 @@ import chalk from "chalk";
 import { saveToken } from "../utils/auth.js";
 import { ora, stopFailure, stopSuccess } from "../utils/spinner.js";
 
+// Production server URL — override via ENCLAVE_SERVER_URL for self-hosted instances
+const DEFAULT_SERVER_URL = "https://enclaveapi.ankitbhavarthe.xyz";
+
 /**
  * Initiates browser-based OAuth authentication flow for the CLI, or saves a direct token.
  */
@@ -72,7 +75,7 @@ export async function loginCommand(options: { provider?: string; token?: string 
   // Listen on port 0 to let OS allocate any available port
   server.listen(0, "localhost", () => {
     const port = (server.address() as AddressInfo).port;
-    const serverUrl = process.env.ENCLAVE_SERVER_URL || "http://localhost:4000";
+    const serverUrl = process.env.ENCLAVE_SERVER_URL || DEFAULT_SERVER_URL;
     const authUrl = `${serverUrl}/auth/cli-login?port=${port}&provider=${provider}`;
 
     console.log(chalk.cyan(`\nTo authenticate, please open the following URL in your browser:\n`));
@@ -86,3 +89,4 @@ export async function loginCommand(options: { provider?: string; token?: string 
     });
   });
 }
+
