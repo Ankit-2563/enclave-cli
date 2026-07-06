@@ -3,12 +3,17 @@ import path from "path";
 import chalk from "chalk";
 import dotenv from "dotenv";
 import api from "../utils/api.js";
-import { readConfig, readState, writeState } from "../utils/config.js";
+import { readConfig, writeConfig, readState, writeState } from "../utils/config.js";
 import { ora, stopFailure, stopSuccess } from "../utils/spinner.js";
 
 /**
  * Reads local .env file, diffs against the server, and pushes secrets.
  */
+interface Environment {
+  id: string;
+  name: string;
+}
+
 export async function pushCommand() {
   const config = readConfig();
   if (!config) {
@@ -17,9 +22,46 @@ export async function pushCommand() {
   }
 
   if (!config.environmentId) {
-    console.error(chalk.red("Error: No active environment branch set."));
-    console.log(chalk.dim("Please specify an environment branch to pull first (e.g. enc pull development) before pushing."));
-    process.exit(1);
+    const resolveSpinner = ora("Fetching project environments...").start();
+    let envs: Environment[] = [];
+    try {
+      const { data } = await api.get(`/projects/${config.projectId}/environments`);
+      envs = data;
+      resolveSpinner.stop();
+    } catch (err: any) {
+      stopFailure(resolveSpinner, `Failed to fetch environments: ${err.message}`);
+      process.exit(1);
+    }
+
+    if (envs.length === 0) {
+      console.error(chalk.red("Error: No environments found in this project. Please create one on the dashboard."));
+      process.exit(1);
+    }
+
+    let selectedEnv: Environment;
+    if (envs.length === 1) {
+      selectedEnv = envs[0];
+      console.log(chalk.blue(`Auto-selecting the only available environment: "${selectedEnv.name}"`));
+    } else {
+      try {
+        const { select } = await import("@inquirer/prompts");
+        const selectedId = await select({
+          message: "Select the environment to push to:",
+          choices: envs.map((e) => ({
+            name: e.name,
+            value: e.id,
+          })),
+        });
+        selectedEnv = envs.find((e) => e.id === selectedId)!;
+      } catch (err) {
+        console.error(chalk.red("\nError: Push canceled. Please select an environment."));
+        process.exit(1);
+      }
+    }
+
+    config.environmentId = selectedEnv.id;
+    config.environmentName = selectedEnv.name;
+    writeConfig(config);
   }
 
   const envPath = path.join(process.cwd(), ".env");
