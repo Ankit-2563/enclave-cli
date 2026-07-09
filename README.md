@@ -2,7 +2,7 @@
 
 **Secure secrets management for developer teams.** Push, pull, and inject environment variables with Git-like commands — no plaintext `.env` files.
 
-[![npm version](https://badge.fury.io/js/%40ankitbhavarthe%2Fenclave-cli.svg)](https://www.npmjs.com/package/@ankitbhavarthe/enclave-cli)
+[![npm version](https://img.shields.io/npm/v/%40ankitbhavarthe/enclave-cli)](https://www.npmjs.com/package/@ankitbhavarthe/enclave-cli)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)](https://nodejs.org)
 
 ## Installation
