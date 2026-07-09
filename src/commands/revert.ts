@@ -1,17 +1,13 @@
 import chalk from "chalk";
 import api from "../utils/api.js";
-import { readConfig } from "../utils/config.js";
-import { ora, stopFailure, stopSuccess } from "../utils/spinner.js";
+import { requireConfig } from "../utils/config.js";
+import ora from "ora";
 
 /**
  * Handles reverting a single key or the entire environment.
  */
 export async function revertCommand(options: { key?: string; ver?: string; before?: string }) {
-  const config = readConfig();
-  if (!config) {
-    console.error(chalk.red("Error: Project config not found. Please run 'enclave init' first."));
-    process.exit(1);
-  }
+  const config = requireConfig();
 
   const key = options.key;
   const before = options.before;
@@ -46,7 +42,8 @@ export async function revertCommand(options: { key?: string; ver?: string; befor
       timestamp: before,
     });
 
-    stopSuccess(spinner, "Secrets reverted successfully!");
+    spinner.stop();
+    console.log(chalk.green("Secrets reverted successfully!"));
 
     if (data.type === "single") {
       console.log(chalk.bold("\nRevert Details:"));
@@ -71,7 +68,8 @@ export async function revertCommand(options: { key?: string; ver?: string; befor
       }
     }
   } catch (err: any) {
-    stopFailure(spinner, `Failed to revert secrets: ${err.response?.data?.error || err.message}`);
+    spinner.stop();
+    console.error(chalk.red(`Failed to revert secrets: ${err.response?.data?.error || err.message}`));
     process.exit(1);
   }
 }
