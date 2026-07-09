@@ -152,13 +152,15 @@ async function run() {
   const project = projectResponse.data;
   const devEnv = project.environments.find((e: any) => e.name === "development");
 
-  const configPath = path.join(cliCwd, "enclave.json");
+  const configDir = path.join(cliCwd, ".enc");
+  if (!fs.existsSync(configDir)) fs.mkdirSync(configDir);
+  const configPath = path.join(configDir, "config.json");
   fs.writeFileSync(configPath, JSON.stringify({
     projectId: project.id,
     environmentId: devEnv.id,
     environmentName: devEnv.name,
   }, null, 2), "utf8");
-  console.log("Project initialized at enclave.json");
+  console.log("Project initialized at .enc/config.json");
 
   // 3. Test 'enclave push'
   console.log("\nTesting 'enclave push'...");
@@ -283,9 +285,7 @@ async function run() {
   await prisma.project.deleteMany({ where: { ownerId: testUser.id } });
   await prisma.user.delete({ where: { id: testUser.id } });
   if (fs.existsSync(envPath)) fs.unlinkSync(envPath);
-  if (fs.existsSync(configPath)) fs.unlinkSync(configPath);
-  const statePath = path.join(cliCwd, ".enclave-state.json");
-  if (fs.existsSync(statePath)) fs.unlinkSync(statePath);
+  if (fs.existsSync(configDir)) fs.rmSync(configDir, { recursive: true, force: true });
 
   console.log("All CLI integration tests passed successfully!");
   process.exit(0);
