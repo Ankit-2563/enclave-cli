@@ -7,6 +7,15 @@
 
 ## Installation
 
+### Via Homebrew (Recommended for macOS & Linux)
+
+```bash
+brew tap Ankit-2563/tap
+brew install enclave-cli
+```
+
+### Via npm
+
 ```bash
 npm install -g @ankitbhavarthe/enclave-cli
 ```
@@ -99,6 +108,8 @@ The CLI reads the following environment variables:
 |---|---|---|
 | `ENCLAVE_API_URL` | `https://enclaveapi.ankitbhavarthe.xyz/api` | Override the API endpoint (for self-hosted instances) |
 | `ENCLAVE_SERVER_URL` | `https://enclaveapi.ankitbhavarthe.xyz` | Override the server URL (for OAuth login flow) |
+| `ENCLAVE_API_TOKEN` | | Provide a Personal Access Token directly to bypass disk storage entirely |
+| `ENCLAVE_STRICT` | | Set to `1` to strictly prohibit CLI from falling back to plaintext storage on disk if OS keychain is unavailable |
 
 ### Self-Hosted Usage
 
@@ -117,7 +128,11 @@ Tokens are stored securely using the OS keychain (via [keytar](https://github.co
 - **Linux** — libsecret / kwallet
 - **Windows** — Credential Vault
 
-Falls back to a file at `~/.enclave/auth.json` (permissions `0600`) if the keychain is unavailable (e.g., CI environments).
+If the OS keychain is unavailable (e.g. in Docker, CI/CD pipelines, headless runners), the CLI logs a warning to `stderr` and falls back to writing the token in plaintext to `~/.enclave/auth.json` with strict `0600` permissions.
+
+To prevent fallback to disk entirely:
+1. Define the `ENCLAVE_API_TOKEN` environment variable to supply the token directly to the CLI's memory.
+2. Set the `ENCLAVE_STRICT=1` environment variable. When strict mode is enabled, the CLI will output a loud error to `stderr` and immediately exit with code `1` rather than falling back to plaintext disk storage.
 
 ## .gitignore Recommendations
 
