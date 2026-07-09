@@ -3,23 +3,11 @@ import path from "path";
 import chalk from "chalk";
 import dotenv from "dotenv";
 import api from "../utils/api.js";
-import { readConfig, writeConfig, readState, writeState } from "../utils/config.js";
-import { ora, stopFailure, stopSuccess } from "../utils/spinner.js";
-
-/**
- * Reads local .env file, diffs against the server, and pushes secrets.
- */
-interface Environment {
-  id: string;
-  name: string;
-}
+import { Environment, requireConfig, writeConfig, readState, writeState } from "../utils/config.js";
+import ora from "ora";
 
 export async function pushCommand() {
-  const config = readConfig();
-  if (!config) {
-    console.error(chalk.red("Error: Project config not found. Please run 'enc init' first."));
-    process.exit(1);
-  }
+  const config = requireConfig();
 
   if (!config.environmentId) {
     const resolveSpinner = ora("Fetching project environments...").start();
@@ -29,7 +17,8 @@ export async function pushCommand() {
       envs = data;
       resolveSpinner.stop();
     } catch (err: any) {
-      stopFailure(resolveSpinner, `Failed to fetch environments: ${err.message}`);
+      resolveSpinner.stop();
+      console.error(chalk.red(`Failed to fetch environments: ${err.message}`));
       process.exit(1);
     }
 
@@ -72,10 +61,8 @@ export async function pushCommand() {
 
   // Load lastPulledAt for conflict check (fast-forward prevention)
   const state = readState();
-  let lastPulledAt = new Date(0).toISOString();
-  if (state?.lastPulledAt) {
-    lastPulledAt = state.lastPulledAt;
-  } else {
+  const lastPulledAt = state?.lastPulledAt ?? new Date(0).toISOString();
+  if (!state?.lastPulledAt) {
     console.log(chalk.yellow("Warning: No sync state found. Forcing push (conflict check may fail)."));
   }
 
@@ -93,7 +80,8 @@ export async function pushCommand() {
 
     writeState({ lastPulledAt: new Date().toISOString() });
 
-    stopSuccess(spinner, "Secrets pushed successfully!");
+    spinner.stop();
+    console.log(chalk.green("Secrets pushed successfully!"));
     
     // Print structural changes
     console.log(chalk.bold("\nPush Summary:"));
@@ -105,12 +93,13 @@ export async function pushCommand() {
     if (data.updated.length > 0) console.log(chalk.dim(`    Updated: ${data.updated.join(", ")}`));
     if (data.deleted.length > 0) console.log(chalk.dim(`    Deleted: ${data.deleted.join(", ")}`));
   } catch (err: any) {
+    spinner.stop();
     if (err.response?.status === 409) {
-      stopFailure(spinner, "Push rejected: Concurrency conflict detected.");
+      console.error(chalk.red("Push rejected: Concurrency conflict detected."));
       console.log(chalk.yellow("\nAnother team member has pushed updates since your last pull."));
       console.log(`Please run ${chalk.cyan("enclave pull")} to merge changes first.`);
     } else {
-      stopFailure(spinner, `Failed to push secrets: ${err.response?.data?.error || err.message}`);
+      console.error(chalk.red(`Failed to push secrets: ${err.response?.data?.error || err.message}`));
     }
     process.exit(1);
   }
