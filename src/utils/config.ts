@@ -7,6 +7,11 @@ const STATE_FILE = "state.json";
 const LEGACY_CONFIG_FILE = "enclave.json";
 const LEGACY_STATE_FILE = ".enclave-state.json";
 
+export interface Environment {
+  id: string;
+  name: string;
+}
+
 export interface EnclaveConfig {
   projectId: string;
   environmentId?: string;
