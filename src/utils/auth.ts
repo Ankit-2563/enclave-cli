@@ -2,6 +2,7 @@ import { execSync } from "child_process";
 import path from "path";
 import os from "os";
 import fs from "fs";
+import chalk from "chalk";
 
 const ENCLAVE_DIR = path.join(os.homedir(), ".enclave");
 const AUTH_FILE = path.join(ENCLAVE_DIR, "auth.json");
@@ -83,6 +84,25 @@ export function saveToken(token: string): void {
     }
     return;
   }
+
+  if (process.env.ENCLAVE_STRICT === "1") {
+    console.error(
+      chalk.red(
+        "\n❌ ERROR: OS Keychain is unavailable, and ENCLAVE_STRICT is enabled.\n" +
+        "Refusing fallback to plaintext storage on disk. Exiting.\n"
+      )
+    );
+    process.exit(1);
+  }
+
+  console.warn(
+    chalk.yellow(
+      "\n⚠️  WARNING: OS Keychain is unavailable. Falling back to storing token in plaintext at:\n" +
+      `   ${AUTH_FILE}\n` +
+      "  To avoid plaintext storage, set up your OS keychain, or set the ENCLAVE_API_TOKEN environment variable.\n"
+    )
+  );
+
   fs.mkdirSync(ENCLAVE_DIR, { recursive: true });
   fs.writeFileSync(AUTH_FILE, JSON.stringify({ token }), { mode: 0o600 });
 }
@@ -91,6 +111,9 @@ export function saveToken(token: string): void {
  * Retrieves the authentication token from OS keychain, falling back to the secure file.
  */
 export function getToken(): string | null {
+  if (process.env.ENCLAVE_API_TOKEN) {
+    return process.env.ENCLAVE_API_TOKEN;
+  }
   const token = getKeychain();
   if (token) {
     return token;
@@ -99,6 +122,12 @@ export function getToken(): string | null {
     return null;
   }
   try {
+    console.warn(
+      chalk.yellow(
+        `\n⚠️  WARNING: Using plaintext token from fallback storage at:\n` +
+        `   ${AUTH_FILE}\n`
+      )
+    );
     const data = JSON.parse(fs.readFileSync(AUTH_FILE, "utf8"));
     return data.token || null;
   } catch (e) {
