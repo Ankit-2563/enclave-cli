@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name("enclave")
   .description("Enclave CLI - Secure Secrets Management Platform for Teams")
-  .version("0.1.4");
+  .version("0.1.5");
 
 program
   .command("login")
