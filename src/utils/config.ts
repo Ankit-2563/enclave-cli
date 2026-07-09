@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import chalk from "chalk";
 
 const ENCLAVE_DIR = ".enc";
 const CONFIG_FILE = "config.json";
@@ -83,13 +84,23 @@ export function readConfig(): EnclaveConfig | null {
 }
 
 /**
+ * ponytail: extracted config check to avoid 5x duplication at command start.
+ */
+export function requireConfig(): EnclaveConfig {
+  const config = readConfig();
+  if (!config) {
+    console.error(chalk.red("Error: Project config not found. Please run 'enc init' first."));
+    process.exit(1);
+  }
+  return config;
+}
+
+/**
  * Writes the config.json file to the .enclave directory.
  */
 export function writeConfig(config: EnclaveConfig): void {
   const dirPath = getEnclaveDirPath();
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
+  fs.mkdirSync(dirPath, { recursive: true });
   const configPath = path.join(dirPath, CONFIG_FILE);
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2), "utf8");
 }
@@ -114,9 +125,7 @@ export function readState(): EnclaveState | null {
  */
 export function writeState(state: EnclaveState): void {
   const dirPath = getEnclaveDirPath();
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
+  fs.mkdirSync(dirPath, { recursive: true });
   const statePath = path.join(dirPath, STATE_FILE);
   fs.writeFileSync(statePath, JSON.stringify(state, null, 2), "utf8");
 }
