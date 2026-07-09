@@ -8,17 +8,15 @@ const AUTH_FILE = path.join(ENCLAVE_DIR, "auth.json");
 /**
  * Saves the authentication token to a secure file with owner-only permissions (0600).
  */
-export async function saveToken(token: string): Promise<void> {
-  if (!fs.existsSync(ENCLAVE_DIR)) {
-    fs.mkdirSync(ENCLAVE_DIR, { recursive: true });
-  }
+export function saveToken(token: string): void {
+  fs.mkdirSync(ENCLAVE_DIR, { recursive: true });
   fs.writeFileSync(AUTH_FILE, JSON.stringify({ token }), { mode: 0o600 });
 }
 
 /**
  * Retrieves the authentication token from the secure file.
  */
-export async function getToken(): Promise<string | null> {
+export function getToken(): string | null {
   if (!fs.existsSync(AUTH_FILE)) {
     return null;
   }
@@ -33,7 +31,7 @@ export async function getToken(): Promise<string | null> {
 /**
  * Deletes the authentication token (logout).
  */
-export async function deleteToken(): Promise<void> {
+export function deleteToken(): void {
   if (fs.existsSync(AUTH_FILE)) {
     fs.unlinkSync(AUTH_FILE);
   }
