@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import api from "../utils/api.js";
 import { readConfig, writeConfig } from "../utils/config.js";
-import { ora } from "../utils/spinner.js";
+import ora from "ora";
 
 /**
  * Links the current directory to an Enclave project.
