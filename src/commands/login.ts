@@ -3,7 +3,7 @@ import { AddressInfo } from "net";
 import open from "open";
 import chalk from "chalk";
 import { saveToken } from "../utils/auth.js";
-import { ora, stopFailure, stopSuccess } from "../utils/spinner.js";
+import ora from "ora";
 
 // Production server URL — override via ENCLAVE_SERVER_URL for self-hosted instances
 const DEFAULT_SERVER_URL = "https://enclaveapi.ankitbhavarthe.xyz";
@@ -20,11 +20,13 @@ export async function loginCommand(options: { provider?: string; token?: string 
     }
     const spinner = ora("Saving personal access token...").start();
     try {
-      await saveToken(token);
-      stopSuccess(spinner, "Authentication successful! Token saved securely.");
+      saveToken(token);
+      spinner.stop();
+      console.log(chalk.green("Authentication successful! Token saved securely."));
       process.exit(0);
     } catch (err: any) {
-      stopFailure(spinner, `Failed to save token: ${err.message}`);
+      spinner.stop();
+      console.error(chalk.red(`Failed to save token: ${err.message}`));
       process.exit(1);
     }
   }
@@ -43,12 +45,13 @@ export async function loginCommand(options: { provider?: string; token?: string 
       if (!token) {
         res.writeHead(400, { "Content-Type": "text/html" });
         res.end("<h1>Authentication Failed</h1><p>No token provided by the server.</p>");
-        stopFailure(spinner, "Authentication failed: No token received.");
+        spinner.stop();
+        console.error(chalk.red("Authentication failed: No token received."));
         server.close();
         process.exit(1);
       }
 
-      await saveToken(token);
+      saveToken(token);
 
       res.writeHead(200, { "Content-Type": "text/html" });
       res.end(`
@@ -62,7 +65,8 @@ export async function loginCommand(options: { provider?: string; token?: string 
         </html>
       `);
 
-      stopSuccess(spinner, "Authentication successful! Token saved securely.");
+      spinner.stop();
+      console.log(chalk.green("Authentication successful! Token saved securely."));
       server.close(() => {
         process.exit(0);
       });
