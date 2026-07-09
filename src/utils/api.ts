@@ -11,8 +11,8 @@ const api = axios.create({
 
 // Interceptor to inject PAT from keytar/secure file storage on every request
 api.interceptors.request.use(
-  async (config) => {
-    const token = await getToken();
+  (config) => {
+    const token = getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
