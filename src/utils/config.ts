@@ -5,8 +5,6 @@ import chalk from "chalk";
 const ENCLAVE_DIR = ".enc";
 const CONFIG_FILE = "config.json";
 const STATE_FILE = "state.json";
-const LEGACY_CONFIG_FILE = "enclave.json";
-const LEGACY_STATE_FILE = ".enclave-state.json";
 
 export interface Environment {
   id: string;
@@ -31,46 +29,13 @@ function getEnclaveDirPath(): string {
   return path.join(process.cwd(), ENCLAVE_DIR);
 }
 
-function migrateLegacyConfig(): EnclaveConfig | null {
-  const legacyPath = path.join(process.cwd(), LEGACY_CONFIG_FILE);
-  if (!fs.existsSync(legacyPath)) {
-    return null;
-  }
-  try {
-    const data = JSON.parse(fs.readFileSync(legacyPath, "utf8"));
-    if (!data.projectId) {
-      return null;
-    }
-    writeConfig(data);
-    fs.unlinkSync(legacyPath);
-    return data;
-  } catch {
-    return null;
-  }
-}
-
-function migrateLegacyState(): EnclaveState | null {
-  const legacyPath = path.join(process.cwd(), LEGACY_STATE_FILE);
-  if (!fs.existsSync(legacyPath)) {
-    return null;
-  }
-  try {
-    const data = JSON.parse(fs.readFileSync(legacyPath, "utf8"));
-    writeState(data);
-    fs.unlinkSync(legacyPath);
-    return data;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * Reads the config.json file from the .enclave directory.
  */
 export function readConfig(): EnclaveConfig | null {
   const configPath = path.join(getEnclaveDirPath(), CONFIG_FILE);
   if (!fs.existsSync(configPath)) {
-    return migrateLegacyConfig();
+    return null;
   }
   try {
     const data = JSON.parse(fs.readFileSync(configPath, "utf8"));
@@ -111,7 +76,7 @@ export function writeConfig(config: EnclaveConfig): void {
 export function readState(): EnclaveState | null {
   const statePath = path.join(getEnclaveDirPath(), STATE_FILE);
   if (!fs.existsSync(statePath)) {
-    return migrateLegacyState();
+    return null;
   }
   try {
     return JSON.parse(fs.readFileSync(statePath, "utf8"));
