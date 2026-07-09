@@ -2,13 +2,8 @@ import fs from "fs";
 import path from "path";
 import chalk from "chalk";
 import api from "../utils/api.js";
-import { readConfig, writeConfig, writeState } from "../utils/config.js";
-import { ora, stopFailure, stopSuccess } from "../utils/spinner.js";
-
-interface Environment {
-  id: string;
-  name: string;
-}
+import { Environment, requireConfig, writeConfig, writeState } from "../utils/config.js";
+import ora from "ora";
 
 interface PullOptions {
   development?: boolean;
@@ -20,11 +15,7 @@ interface PullOptions {
  * Pulls environment secrets from Enclave and writes them to a local .env file.
  */
 export async function pullCommand(envNameArg?: string, options: PullOptions = {}) {
-  const config = readConfig();
-  if (!config) {
-    console.error(chalk.red("Error: Project config not found. Please run 'enc init' first."));
-    process.exit(1);
-  }
+  const config = requireConfig();
 
   // Resolve short flags to environment names
   if (!envNameArg) {
@@ -45,7 +36,8 @@ export async function pullCommand(envNameArg?: string, options: PullOptions = {}
       );
       
       if (!found) {
-        stopFailure(spinner, `Environment "${envNameArg}" not found in this project.`);
+        spinner.stop();
+        console.error(chalk.red(`Environment "${envNameArg}" not found in this project.`));
         process.exit(1);
       }
       
@@ -54,9 +46,11 @@ export async function pullCommand(envNameArg?: string, options: PullOptions = {}
 
       // Save as active branch
       writeConfig({ ...config, environmentId: targetEnvId, environmentName: targetEnvName });
-      stopSuccess(spinner, `Switched to branch "${targetEnvName}"`);
+      spinner.stop();
+      console.log(chalk.green(`Switched to branch "${targetEnvName}"`));
     } catch (err: any) {
-      stopFailure(spinner, `Failed to fetch environments: ${err.message}`);
+      spinner.stop();
+      console.error(chalk.red(`Failed to fetch environments: ${err.message}`));
       process.exit(1);
     }
   }
@@ -83,9 +77,11 @@ export async function pullCommand(envNameArg?: string, options: PullOptions = {}
     const envPath = path.join(process.cwd(), ".env");
     fs.writeFileSync(envPath, envContent, "utf8");
 
-    stopSuccess(pullSpinner, `Successfully pulled ${data.secrets.length} secrets and wrote to .env`);
+    pullSpinner.stop();
+    console.log(chalk.green(`Successfully pulled ${data.secrets.length} secrets and wrote to .env`));
   } catch (err: any) {
-    stopFailure(pullSpinner, `Failed to pull secrets: ${err.response?.data?.error || err.message}`);
+    pullSpinner.stop();
+    console.error(chalk.red(`Failed to pull secrets: ${err.response?.data?.error || err.message}`));
     process.exit(1);
   }
 }
