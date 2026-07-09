@@ -2,18 +2,14 @@ import { spawn } from "child_process";
 import chalk from "chalk";
 import ora from "ora";
 import api from "../utils/api.js";
-import { readConfig } from "../utils/config.js";
+import { requireConfig } from "../utils/config.js";
 
 /**
  * Pulls secrets from the Enclave server directly into memory and spawns
  * the target command with those secrets injected as environment variables.
  */
 export async function runCommand(args: string[]) {
-  const config = readConfig();
-  if (!config) {
-    console.error(chalk.red("Error: Project config not found. Please run 'enc init' first."));
-    process.exit(1);
-  }
+  const config = requireConfig();
 
   if (!config.environmentId) {
     console.error(chalk.red("Error: No active environment branch set."));
